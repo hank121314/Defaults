@@ -91,7 +91,23 @@ extension Defaults {
 		}
 	}
 
-	public struct KeyChange<Value: Codable> {
+	public struct KeyChange<Value: DefaultsSerializable> {
+		public let kind: NSKeyValueChange
+		public let indexes: IndexSet?
+		public let isPrior: Bool
+		public let newValue: Value
+		public let oldValue: Value
+
+		init(change: BaseChange, defaultValue: Value) {
+			self.kind = change.kind
+			self.indexes = change.indexes
+			self.isPrior = change.isPrior
+			self.oldValue = change.oldValue as? Value ?? defaultValue
+			self.newValue = change.newValue as? Value ?? defaultValue
+		}
+	}
+
+	public struct CodableKeyChange<Value: Codable> {
 		public let kind: NSKeyValueChange
 		public let indexes: IndexSet?
 		public let isPrior: Bool
@@ -358,6 +374,20 @@ extension Defaults {
 		let observation = UserDefaultsKeyObservation(object: key.suite, key: key.name) { change in
 			handler(
 				KeyChange(change: change, defaultValue: key.defaultValue)
+			)
+		}
+		observation.start(options: options)
+		return observation
+	}
+
+	public static func observe<Value>(
+		_ key: CodableKey<Value>,
+		options: ObservationOptions = [.initial],
+		handler: @escaping (CodableKeyChange<Value>) -> Void
+	) -> Observation {
+		let observation = UserDefaultsKeyObservation(object: key.suite, key: key.name) { change in
+			handler(
+				CodableKeyChange(change: change, defaultValue: key.defaultValue)
 			)
 		}
 		observation.start(options: options)

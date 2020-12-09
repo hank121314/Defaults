@@ -1,6 +1,10 @@
 import Foundation
 
 extension UserDefaults {
+	private func _get<Value: DefaultsSerializable>(_ key: String) -> Value? {
+		return object(forKey: key) as? Value
+	}
+
 	private func _get<Value: Codable>(_ key: String) -> Value? {
 		if UserDefaults.isNativelySupportedType(Value.self) {
 			return object(forKey: key) as? Value
@@ -70,6 +74,15 @@ extension UserDefaults {
 		set(_encode(value), forKey: key)
 	}
 
+	private func _set<Value: DefaultsSerializable>(_ key: String, to value: Value) {
+		if (value as? _DefaultsOptionalType)?.isNil == true {
+			removeObject(forKey: key)
+			return
+		}
+
+		set(value, forKey: key)
+	}
+
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
 	private func _set<Value: NSSecureCoding>(_ key: String, to value: Value) {
 		// TODO: Handle nil here too.
@@ -82,6 +95,13 @@ extension UserDefaults {
 	}
 
 	public subscript<Value>(key: Defaults.Key<Value>) -> Value {
+		get { _get(key.name) ?? key.defaultValue }
+		set {
+			_set(key.name, to: newValue)
+		}
+	}
+
+	public subscript<Value>(key: Defaults.CodableKey<Value>) -> Value {
 		get { _get(key.name) ?? key.defaultValue }
 		set {
 			_set(key.name, to: newValue)

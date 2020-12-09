@@ -6,12 +6,16 @@ import Defaults
 
 let fixtureURL = URL(string: "https://sindresorhus.com")!
 let fixtureURL2 = URL(string: "https://example.com")!
+private let username = "Hank Chen"
 
 enum FixtureEnum: String, Codable {
 	case tenMinutes = "10 Minutes"
 	case halfHour = "30 Minutes"
 	case oneHour = "1 Hour"
 }
+
+let user = ["username": username]
+let userId = "0"
 
 let fixtureDate = Date()
 
@@ -37,11 +41,13 @@ final class ExamplePersistentHistory: NSPersistentHistoryToken {
 }
 
 extension Defaults.Keys {
+	
 	static let key = Key<Bool>("key", default: false)
-	static let url = Key<URL>("url", default: fixtureURL)
-	static let `enum` = Key<FixtureEnum>("enum", default: .oneHour)
+	static let url = CodableKey<URL>("url", default: fixtureURL)
+	static let `enum` = CodableKey<FixtureEnum>("enum", default: .oneHour)
 	static let data = Key<Data>("data", default: Data([]))
 	static let date = Key<Date>("date", default: fixtureDate)
+	static let dictionary = Key<[String: [String: String]]>("dictionary", default: [userId: user])
 
 	// NSSecureCoding
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
@@ -140,6 +146,14 @@ final class DefaultsTests: XCTestCase {
 		XCTAssertEqual(Defaults[.date], newDate)
 	}
 
+	func testsDictionaryType() {
+		XCTAssertEqual(Defaults[.dictionary][userId]?["username"], username)
+
+		let newName = "OsakaMan"
+		Defaults[.dictionary][userId]?["username"] = newName
+		XCTAssertEqual(Defaults[.dictionary][userId]?["username"], newName)
+	}
+
 	func testRemoveAll() {
 		let key = Defaults.Key<Bool>("removeAll", default: false)
 		let key2 = Defaults.Key<Bool>("removeAll2", default: false)
@@ -183,6 +197,32 @@ final class DefaultsTests: XCTestCase {
 		}
 
 		Defaults[key] = true
+		Defaults.reset(key)
+		cancellable.cancel()
+
+		waitForExpectations(timeout: 10)
+	}
+
+	@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, iOSApplicationExtension 13.0, macOSApplicationExtension 10.15, tvOSApplicationExtension 13.0, watchOSApplicationExtension 6.0, *)
+	func testObserveCodableKeyCombine() {
+		let key = Defaults.CodableKey<URL>("observeKey", default: fixtureURL)
+		let expect = expectation(description: "Observation closure being called")
+
+		let publisher = Defaults
+			.publisher(key, options: [])
+			.map { ($0.oldValue, $0.newValue) }
+			.collect(2)
+
+		let cancellable = publisher.sink { tuples in
+			for (i, expected) in [(fixtureURL, fixtureURL2), (fixtureURL2, fixtureURL)].enumerated() {
+				XCTAssertEqual(expected.0, tuples[i].0)
+				XCTAssertEqual(expected.1, tuples[i].1)
+			}
+
+			expect.fulfill()
+		}
+
+		Defaults[key] = fixtureURL2
 		Defaults.reset(key)
 		cancellable.cancel()
 
@@ -400,6 +440,42 @@ final class DefaultsTests: XCTestCase {
 		waitForExpectations(timeout: 10)
 	}
 
+	func testObserveCodableKey() {
+		let key = Defaults.CodableKey<[String: [String: String]]>("observeKey", default: [userId: ["username": username]])
+		let newName = "OsakaMan"
+		let expect = expectation(description: "Observation closure being called")
+
+		var observation: Defaults.Observation!
+		observation = Defaults.observe(key, options: []) { change in
+			XCTAssertEqual(change.oldValue[userId]?["username"], username)
+			XCTAssertEqual(change.newValue[userId]?["username"], newName)
+			observation.invalidate()
+			expect.fulfill()
+		}
+
+		Defaults[key][userId]?["username"]  = newName
+
+		waitForExpectations(timeout: 10)
+	}
+
+	func testObserveDictionaryKey() {
+		let key = Defaults.Key<[String: [String: String]]>("observeKey", default: [userId: ["username": username]])
+		let newName = "OsakaMan"
+		let expect = expectation(description: "Observation closure being called")
+
+		var observation: Defaults.Observation!
+		observation = Defaults.observe(key, options: []) { change in
+			XCTAssertEqual(change.oldValue[userId]?["username"], username)
+			XCTAssertEqual(change.newValue[userId]?["username"], newName)
+			observation.invalidate()
+			expect.fulfill()
+		}
+
+		Defaults[key][userId]?["username"]  = newName
+
+		waitForExpectations(timeout: 10)
+	}
+
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
 	func testObserveNSSecureCodingKey() {
 		let key = Defaults.NSSecureCodingKey<ExamplePersistentHistory>("observeNSSecureCodingKey", default: ExamplePersistentHistory(value: "TestValue"))
@@ -503,7 +579,7 @@ final class DefaultsTests: XCTestCase {
 	func testObserveKeyURL() {
 		let fixtureURL = URL(string: "https://sindresorhus.com")!
 		let fixtureURL2 = URL(string: "https://example.com")!
-		let key = Defaults.Key<URL>("observeKeyURL", default: fixtureURL)
+		let key = Defaults.CodableKey<URL>("observeKeyURL", default: fixtureURL)
 		let expect = expectation(description: "Observation closure being called")
 
 		var observation: Defaults.Observation!
@@ -520,7 +596,7 @@ final class DefaultsTests: XCTestCase {
 	}
 
 	func testObserveKeyEnum() {
-		let key = Defaults.Key<FixtureEnum>("observeKeyEnum", default: .oneHour)
+		let key = Defaults.CodableKey<FixtureEnum>("observeKeyEnum", default: .oneHour)
 		let expect = expectation(description: "Observation closure being called")
 
 		var observation: Defaults.Observation!

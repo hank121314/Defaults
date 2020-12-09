@@ -146,3 +146,20 @@ extension DispatchQueue {
 		}
 	}
 }
+
+/// A protocol use to validate data type of Defaults.Key
+public protocol DefaultsSerializable {}
+
+extension Optional: DefaultsSerializable {}
+
+/// Define the protocol which have native support in UserDefaults
+extension Data: DefaultsSerializable {}
+extension String: DefaultsSerializable {}
+extension Date: DefaultsSerializable {}
+extension Bool: DefaultsSerializable {}
+extension Int: DefaultsSerializable {}
+extension Double: DefaultsSerializable {}
+extension Float: DefaultsSerializable {}
+
+extension Array: DefaultsSerializable where Element: DefaultsSerializable {}
+extension Dictionary: DefaultsSerializable where Key: Hashable, Value: DefaultsSerializable {}

@@ -20,6 +20,8 @@ public enum Defaults {
 	public class Keys: BaseKey {
 		public typealias Key = Defaults.Key
 
+		public typealias CodableKey = Defaults.CodableKey
+
 		@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
 		public typealias NSSecureCodingKey = Defaults.NSSecureCodingKey
 
@@ -35,7 +37,26 @@ public enum Defaults {
 		}
 	}
 
-	public final class Key<Value: Codable>: AnyKey {
+	public final class Key<Value: DefaultsSerializable>: AnyKey {
+		public let defaultValue: Value
+
+		/// Create a defaults key.
+		/// The `default` parameter can be left out if the `Value` type is an optional.
+		public init(_ key: String, default defaultValue: Value, suite: UserDefaults = .standard) {
+			self.defaultValue = defaultValue
+
+			super.init(name: key, suite: suite)
+
+			if (defaultValue as? _DefaultsOptionalType)?.isNil == true {
+				return
+			}
+
+
+			suite.register(defaults: [key: defaultValue])
+		}
+	}
+
+	public final class CodableKey<Value: Codable>: AnyKey {
 		public let defaultValue: Value
 
 		/// Create a defaults key.
@@ -98,6 +119,14 @@ public enum Defaults {
 		}
 	}
 
+	/// Access a defaults value using a `Defaults.CodableKey`.
+	public static subscript<Value>(key: CodableKey<Value>) -> Value {
+		get { key.suite[key] }
+		set {
+			key.suite[key] = newValue
+		}
+	}
+
 	/// Access a defaults value using a `Defaults.NSSecureCodingKey`.
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
 	public static subscript<Value>(key: NSSecureCodingKey<Value>) -> Value {
@@ -129,6 +158,12 @@ extension Defaults {
 }
 
 extension Defaults.Key {
+	public convenience init<T>(_ key: String, suite: UserDefaults = .standard) where Value == T? {
+		self.init(key, default: nil, suite: suite)
+	}
+}
+
+extension Defaults.CodableKey {
 	public convenience init<T>(_ key: String, suite: UserDefaults = .standard) where Value == T? {
 		self.init(key, default: nil, suite: suite)
 	}
