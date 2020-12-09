@@ -4,7 +4,7 @@ import Combine
 
 @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 extension Defaults {
-	final class Observable<Value>: ObservableObject where Value: DefaultsSerializable, Value: Codable {
+	final class Observable<Value: DefaultsSerializable>: ObservableObject {
 		let objectWillChange = ObservableObjectPublisher()
 		private var observation: DefaultsObservation?
 		private let key: Defaults.Key<Value>
@@ -36,11 +36,44 @@ extension Defaults {
 			key.reset()
 		}
 	}
+
+	final class ObservableCodable<Value: Codable>: ObservableObject {
+		let objectWillChange = ObservableObjectPublisher()
+		private var observation: DefaultsObservation?
+		private let key: Defaults.CodableKey<Value>
+
+		var value: Value {
+			get { Defaults[key] }
+			set {
+				objectWillChange.send()
+				Defaults[key] = newValue
+			}
+		}
+
+		init(_ key: CodableKey<Value>) {
+			self.key = key
+
+			self.observation = Defaults.observe(key, options: [.prior]) { [weak self] change in
+				guard change.isPrior else {
+					return
+				}
+
+				DispatchQueue.mainSafeAsync {
+					self?.objectWillChange.send()
+				}
+			}
+		}
+
+		/// Reset the key back to its default value.
+		func reset() {
+			key.reset()
+		}
+	}
 }
 
 @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 @propertyWrapper
-public struct Default<Value>: DynamicProperty where Value: DefaultsSerializable, Value: Codable {
+public struct Default<Value: DefaultsSerializable>: DynamicProperty {
 	public typealias Publisher = AnyPublisher<Defaults.KeyChange<Value>, Never>
 
 	private let key: Defaults.Key<Value>
@@ -106,6 +139,39 @@ public struct Default<Value>: DynamicProperty where Value: DefaultsSerializable,
 	}
 	```
 	*/
+	public func reset() {
+		key.reset()
+	}
+}
+
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+@propertyWrapper
+public struct DefaultCodable<Value: Codable>: DynamicProperty {
+	public typealias Publisher = AnyPublisher<Defaults.CodableKeyChange<Value>, Never>
+
+	private let key: Defaults.CodableKey<Value>
+
+	@ObservedObject private var observable: Defaults.ObservableCodable<Value>
+	public init(_ key: Defaults.CodableKey<Value>) {
+		self.key = key
+		self.observable = Defaults.ObservableCodable(key)
+	}
+
+	public var wrappedValue: Value {
+		get { observable.value }
+		nonmutating set {
+			observable.value = newValue
+		}
+	}
+
+	public var projectedValue: Binding<Value> { $observable.value }
+
+	public var publisher: Publisher { Defaults.publisher(key) }
+
+	public mutating func update() {
+		_observable.update()
+	}
+
 	public func reset() {
 		key.reset()
 	}
