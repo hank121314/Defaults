@@ -51,8 +51,27 @@ public enum Defaults {
 				return
 			}
 
-
 			suite.register(defaults: [key: defaultValue])
+		}
+	}
+
+	public final class BridgeKey<Value: DefaultsBridgeSerializable>: AnyKey {
+		public let defaultValue: Value
+
+		/// Create a defaults key.
+		/// The `default` parameter can be left out if the `Value` type is an optional.
+		public init(_ key: String, default defaultValue: Value, suite: UserDefaults = .standard) {
+			self.defaultValue = defaultValue
+
+			super.init(name: key, suite: suite)
+
+			if (defaultValue as? _DefaultsOptionalType)?.isNil == true {
+				return
+			}
+
+			if let value: [AnyHashable: Any] = Value._defaults.serialize(defaultValue as? Value.Bridge.T) as? [AnyHashable: Any]{
+				suite.register(defaults: [key: value])
+			}
 		}
 	}
 
@@ -119,6 +138,14 @@ public enum Defaults {
 		}
 	}
 
+	/// Access a defaults value using a `Defaults.BridgeKey`.
+	public static subscript<Value>(key: BridgeKey<Value>) -> Value {
+		get { key.suite[key] }
+		set {
+			key.suite[key] = newValue
+		}
+	}
+
 	/// Access a defaults value using a `Defaults.CodableKey`.
 	public static subscript<Value>(key: CodableKey<Value>) -> Value {
 		get { key.suite[key] }
@@ -158,6 +185,12 @@ extension Defaults {
 }
 
 extension Defaults.Key {
+	public convenience init<T>(_ key: String, suite: UserDefaults = .standard) where Value == T? {
+		self.init(key, default: nil, suite: suite)
+	}
+}
+
+extension Defaults.BridgeKey {
 	public convenience init<T>(_ key: String, suite: UserDefaults = .standard) where Value == T? {
 		self.init(key, default: nil, suite: suite)
 	}

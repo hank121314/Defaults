@@ -19,6 +19,46 @@ let userId = "0"
 
 let fixtureDate = Date()
 
+class DefaultsUserBridge: DefaultsBridge {
+	func get(_ key: String, suite: UserDefaults) -> User? {
+		let values = suite.dictionary(forKey: key)
+		guard let name =  values?["username"] as? String else {
+			return nil
+		}
+		return User(name)
+	}
+
+	func set(_ key: String, to value: User?, suite: UserDefaults) {
+		let value = ["username": value?.username]
+		suite.set(value, forKey: key)
+	}
+
+	func deserialize(_ value: Any?) -> User? {
+		if let value = value as? [String: String], let username = value["username"] {
+			return User(username)
+		}
+		return nil
+	}
+
+	func serialize(_ value: User?) -> Any? {
+		return ["username": value?.username] as? [String: String]
+	}
+}
+
+class User: DefaultsBridgeSerializable {
+	static var _defaults: DefaultsUserBridge { return DefaultsUserBridge() }
+
+	var username: String {
+		didSet {
+			User._defaults.set("user_bridge", to: self, suite: .standard)
+		}
+	}
+
+	init(_ username: String) {
+		self.username = username
+	}
+}
+
 @available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
 final class ExamplePersistentHistory: NSPersistentHistoryToken {
 	let value: String
@@ -43,11 +83,11 @@ final class ExamplePersistentHistory: NSPersistentHistoryToken {
 extension Defaults.Keys {
 	
 	static let key = Key<Bool>("key", default: false)
-	static let url = CodableKey<URL>("url", default: fixtureURL)
+	static let url = Defaults.BridgeKey<URL>("url", default: fixtureURL)
 	static let `enum` = CodableKey<FixtureEnum>("enum", default: .oneHour)
 	static let data = Key<Data>("data", default: Data([]))
 	static let date = Key<Date>("date", default: fixtureDate)
-	static let dictionary = Key<[String: [String: String]]>("dictionary", default: [userId: user])
+	static let dictionary = Defaults.Key<[String: [String: String]]>("dictionary", default: [userId: user])
 
 	// NSSecureCoding
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
@@ -76,11 +116,30 @@ final class DefaultsTests: XCTestCase {
 
 	func testOptionalKey() {
 		let key = Defaults.Key<Bool?>("independentOptionalKey")
+		let bridgeKey = Defaults.BridgeKey<User?>("independentOptionalUserKey")
+		let codableKey = Defaults.CodableKey<FixtureEnum?>("independentOptionalCodableKey")
+		let urlKey = Defaults.BridgeKey<URL?>("independentOptionalUrlKey")
 		XCTAssertNil(Defaults[key])
+		XCTAssertNil(Defaults[bridgeKey])
+		XCTAssertNil(Defaults[codableKey])
+		XCTAssertNil(Defaults[urlKey])
+		let newName = "OsakaMan"
 		Defaults[key] = true
+		Defaults[bridgeKey] = User(newName)
+		Defaults[codableKey] = .oneHour
+		Defaults[urlKey] = fixtureURL
 		XCTAssertTrue(Defaults[key]!)
+		XCTAssertEqual(Defaults[bridgeKey]!.username, newName)
+		XCTAssertEqual(Defaults[codableKey]!, .oneHour)
+		XCTAssertEqual(Defaults[urlKey]!, fixtureURL)
 		Defaults[key] = nil
+		Defaults[bridgeKey] = nil
+		Defaults[codableKey] = nil
+		Defaults[urlKey] = nil
 		XCTAssertNil(Defaults[key])
+		XCTAssertNil(Defaults[bridgeKey])
+		XCTAssertNil(Defaults[codableKey])
+		XCTAssertNil(Defaults[urlKey])
 		Defaults[key] = false
 		XCTAssertFalse(Defaults[key]!)
 	}
@@ -103,6 +162,7 @@ final class DefaultsTests: XCTestCase {
 		UserDefaults.standard[key] = true
 		XCTAssertTrue(UserDefaults.standard[key])
 	}
+
 
 	func testKeys() {
 		XCTAssertFalse(Defaults[.key])
@@ -144,6 +204,24 @@ final class DefaultsTests: XCTestCase {
 		let newDate = Date()
 		Defaults[.date] = newDate
 		XCTAssertEqual(Defaults[.date], newDate)
+	}
+
+	func testsCodableType() {
+		let key = Defaults.CodableKey<[String: [String: String]]>("user_codable", default: [userId: user])
+		XCTAssertEqual(Defaults[key][userId]?["username"], username)
+
+		let newName = "OsakaMan"
+		Defaults[key][userId]?["username"] = newName
+		XCTAssertEqual(Defaults[key][userId]?["username"], newName)
+	}
+
+	func testCustomBridgeKey() {
+		let key = Defaults.BridgeKey<User>("user_bridge", default: User(username))
+		XCTAssertEqual(Defaults[key].username, username)
+
+		let newName = "OsakaMan"
+		Defaults[key].username = newName
+		XCTAssertEqual(Defaults[key].username, newName)
 	}
 
 	func testsDictionaryType() {
@@ -223,6 +301,59 @@ final class DefaultsTests: XCTestCase {
 		}
 
 		Defaults[key] = fixtureURL2
+		Defaults.reset(key)
+		cancellable.cancel()
+
+		waitForExpectations(timeout: 10)
+	}
+
+	@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, iOSApplicationExtension 13.0, macOSApplicationExtension 10.15, tvOSApplicationExtension 13.0, watchOSApplicationExtension 6.0, *)
+	func testObserveBridgeKeyCombine() {
+		let key = Defaults.BridgeKey<URL>("observeKey", default: fixtureURL)
+		let expect = expectation(description: "Observation closure being called")
+
+		let publisher = Defaults
+			.publisher(key, options: [])
+			.map { ($0.oldValue, $0.newValue) }
+			.collect(2)
+
+		let cancellable = publisher.sink { tuples in
+			for (i, expected) in [(fixtureURL, fixtureURL2), (fixtureURL2, fixtureURL)].enumerated() {
+				XCTAssertEqual(expected.0, tuples[i].0)
+				XCTAssertEqual(expected.1, tuples[i].1)
+			}
+
+			expect.fulfill()
+		}
+
+		Defaults[key] = fixtureURL2
+		Defaults.reset(key)
+		cancellable.cancel()
+
+		waitForExpectations(timeout: 10)
+	}
+
+	@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, iOSApplicationExtension 13.0, macOSApplicationExtension 10.15, tvOSApplicationExtension 13.0, watchOSApplicationExtension 6.0, *)
+	func testObserveCustomBridgeKeyCombine() {
+		let key = Defaults.BridgeKey<User>("observeKey", default: User(username))
+		let expect = expectation(description: "Observation closure being called")
+		let newName = "OsakaMan"
+
+		let publisher = Defaults
+			.publisher(key, options: [])
+			.map { ($0.oldValue, $0.newValue) }
+			.collect(2)
+
+		let cancellable = publisher.sink { tuples in
+			for (i, expected) in [(username, newName), (newName, username)].enumerated() {
+				XCTAssertEqual(expected.0, tuples[i].0.username)
+				XCTAssertEqual(expected.1, tuples[i].1.username)
+			}
+
+			expect.fulfill()
+		}
+
+		Defaults[key] = User(newName)
 		Defaults.reset(key)
 		cancellable.cancel()
 

@@ -107,6 +107,39 @@ extension Defaults {
 		}
 	}
 
+	public struct BridgeKeyChange<Value: DefaultsBridgeSerializable> {
+		public let kind: NSKeyValueChange
+		public let indexes: IndexSet?
+		public let isPrior: Bool
+		public let newValue: Value
+		public let oldValue: Value
+
+		init(change: BaseChange, defaultValue: Value) {
+			self.kind = change.kind
+			self.indexes = change.indexes
+			self.isPrior = change.isPrior
+			self.oldValue = BridgeKeyChange.deserialize(change.oldValue, default: defaultValue) as? Value ?? defaultValue
+			self.newValue = BridgeKeyChange.deserialize(change.newValue, default: defaultValue) as? Value ?? defaultValue
+		}
+
+		private static func deserialize<Value: DefaultsBridgeSerializable>(_ value: Any?, default defaultValue: Value) -> Value.T? {
+			guard let value = value else { return nil }
+
+			let deserialized =  Value._defaults.deserialize(value)
+
+			var ret: Value.T? = nil
+			if (defaultValue as? _DefaultsOptionalType)?.isNil == true {
+				if (deserialized as _DefaultsOptionalType).isNil == false {
+						ret = deserialized
+				}
+			} else {
+				ret = deserialized ?? value as? Value.T
+			}
+
+			return ret
+		}
+	}
+
 	public struct CodableKeyChange<Value: Codable> {
 		public let kind: NSKeyValueChange
 		public let indexes: IndexSet?
@@ -388,6 +421,20 @@ extension Defaults {
 		let observation = UserDefaultsKeyObservation(object: key.suite, key: key.name) { change in
 			handler(
 				CodableKeyChange(change: change, defaultValue: key.defaultValue)
+			)
+		}
+		observation.start(options: options)
+		return observation
+	}
+
+	public static func observe<Value>(
+		_ key: BridgeKey<Value>,
+		options: ObservationOptions = [.initial],
+		handler: @escaping (BridgeKeyChange<Value>) -> Void
+	) -> Observation {
+		let observation = UserDefaultsKeyObservation(object: key.suite, key: key.name) { change in
+			handler(
+				BridgeKeyChange(change: change, defaultValue: key.defaultValue)
 			)
 		}
 		observation.start(options: options)

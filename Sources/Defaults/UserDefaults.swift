@@ -5,6 +5,16 @@ extension UserDefaults {
 		return object(forKey: key) as? Value
 	}
 
+	private func _get<Value: DefaultsBridgeSerializable>(_ key: String) -> Value? {
+		if let value = Value._defaults.get(key, suite: .standard) as? Value {
+			if (value as? _DefaultsOptionalType)?.isNil == true {
+				return nil
+			}
+			return value
+		}
+		return object(forKey: key) as? Value
+	}
+
 	private func _get<Value: Codable>(_ key: String) -> Value? {
 		if UserDefaults.isNativelySupportedType(Value.self) {
 			return object(forKey: key) as? Value
@@ -79,8 +89,17 @@ extension UserDefaults {
 			removeObject(forKey: key)
 			return
 		}
-
+		
 		set(value, forKey: key)
+	}
+
+	private func _set<Value: DefaultsBridgeSerializable>(_ key: String, to value: Value) {
+		if (value as? _DefaultsOptionalType)?.isNil == true {
+			removeObject(forKey: key)
+			return
+		}
+
+		Value._defaults.set(key, to: value as? Value.T, suite: .standard)
 	}
 
 	@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, iOSApplicationExtension 11.0, macOSApplicationExtension 10.13, tvOSApplicationExtension 11.0, watchOSApplicationExtension 4.0, *)
@@ -95,6 +114,13 @@ extension UserDefaults {
 	}
 
 	public subscript<Value>(key: Defaults.Key<Value>) -> Value {
+		get { _get(key.name) ?? key.defaultValue }
+		set {
+			_set(key.name, to: newValue)
+		}
+	}
+
+	public subscript<Value>(key: Defaults.BridgeKey<Value>) -> Value {
 		get { _get(key.name) ?? key.defaultValue }
 		set {
 			_set(key.name, to: newValue)
