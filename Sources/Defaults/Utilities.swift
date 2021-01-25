@@ -157,28 +157,28 @@ extension Sequence {
 
 extension UnsafePointer {
 	var raw: UnsafeRawPointer {
-			return UnsafeRawPointer(self)
+		UnsafeRawPointer(self)
 	}
 
 	var mutable: UnsafeMutablePointer<Pointee> {
-			return UnsafeMutablePointer<Pointee>(mutating: self)
+		UnsafeMutablePointer<Pointee>(mutating: self)
 	}
 
-	func buffer(n: Int) -> UnsafeBufferPointer<Pointee> {
-			return UnsafeBufferPointer(start: self, count: n)
+	func buffer(count: Int) -> UnsafeBufferPointer<Pointee> {
+		UnsafeBufferPointer(start: self, count: count)
 	}
 }
 
 extension UnsafeMutablePointer {
 	var raw: UnsafeMutableRawPointer {
-			return UnsafeMutableRawPointer(self)
+		UnsafeMutableRawPointer(self)
 	}
 
-	func buffer(n: Int) -> UnsafeMutableBufferPointer<Pointee> {
-			return UnsafeMutableBufferPointer(start: self, count: n)
+	func buffer(count: Int) -> UnsafeMutableBufferPointer<Pointee> {
+		UnsafeMutableBufferPointer(start: self, count: count)
 	}
 
-	func advanced(by n: Int, wordSize: Int) -> UnsafeMutableRawPointer {
-			return self.raw.advanced(by: n * wordSize)
+	func advanced(by count: Int, wordSize: Int) -> UnsafeMutableRawPointer {
+		self.raw.advanced(by: count * wordSize)
 	}
 }

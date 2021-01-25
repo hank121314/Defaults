@@ -1,5 +1,14 @@
 import Foundation
 
+struct ProtocolTypeContainer {
+	let type: Any.Type
+	let witnessTable: Int
+}
+
+struct AnyProtocol {
+	let metadataAddress: Int
+}
+
 public struct PropertyInfo {
 	public let name: String
 	public let type: Any.Type
@@ -9,20 +18,20 @@ public struct PropertyInfo {
 }
 
 func metadataPointer(type: Any.Type) -> UnsafeMutablePointer<Int> {
-	return unsafeBitCast(type, to: UnsafeMutablePointer<Int>.self)
+	unsafeBitCast(type, to: UnsafeMutablePointer<Int>.self)
 }
 
 struct RelativePointer<Offset: FixedWidthInteger, Pointee> {
 	var offset: Offset
 
 	mutating func pointee() -> Pointee {
-		return advanced().pointee
+		advanced().pointee
 	}
 
 	mutating func advanced() -> UnsafeMutablePointer<Pointee> {
 		let offset = self.offset
-		return withUnsafePointer(to: &self) { p in
-			p.raw.advanced(by: numericCast(offset))
+		return withUnsafePointer(to: &self) { pointer in
+			pointer.raw.advanced(by: numericCast(offset))
 				.assumingMemoryBound(to: Pointee.self)
 				.mutable
 		}
@@ -31,26 +40,30 @@ struct RelativePointer<Offset: FixedWidthInteger, Pointee> {
 
 extension RelativePointer: CustomStringConvertible {
 	var description: String {
-		return "\(offset)"
+		"\(offset)"
 	}
 }
 
 struct RelativeVectorPointer<Offset: FixedWidthInteger, Pointee> {
 	var offset: Offset
-	mutating func vector(metadata: UnsafePointer<Int>, n: Int) -> UnsafeBufferPointer<Pointee> {
-		metadata.advanced(by: numericCast(offset)).raw.assumingMemoryBound(to: Pointee.self).buffer(n: n)
+	mutating func vector(metadata: UnsafePointer<Int>, count: Int) -> UnsafeBufferPointer<Pointee> {
+		metadata.advanced(by: numericCast(offset)).raw.assumingMemoryBound(to: Pointee.self).buffer(count: count)
 	}
 }
 
 extension RelativeVectorPointer: CustomStringConvertible {
 	var description: String {
-		return "\(offset)"
+		"\(offset)"
 	}
 }
 
-struct StructMetadata {
-	var kind: Int
-	var ntd: RelativePointer<Int, StructTypeDescriptor>
+struct StructMetadata: NominalMetadataType {
+	var pointer: UnsafeMutablePointer<StructMetadataLayout>
+}
+
+struct StructMetadataLayout: NominalMetadataLayoutType {
+	var _kind: Int
+	var typeDescriptor: UnsafeMutablePointer<StructTypeDescriptor>
 }
 
 typealias FieldTypeAccessor = @convention(c) (UnsafePointer<Int>) -> UnsafePointer<Int>
@@ -108,39 +121,37 @@ struct FieldRecord {
 	var _fieldName: RelativePointer<Int32, UInt8>
 
 	var isVar: Bool {
-		return (fieldRecordFlags & 0x2) == 0x2
+		(fieldRecordFlags & 0x2) == 0x2
 	}
 
 	mutating func fieldName() -> String {
-		return String(cString: _fieldName.advanced())
+		String(cString: _fieldName.advanced())
 	}
 
 	mutating func type(genericContext: UnsafeRawPointer?,
 	                   genericArguments: UnsafeRawPointer?) -> Any.Type
 	{
 		let typeName = _mangledTypeName.advanced()
-		let metadataPtr = _getTypeByMangledNameInContext(
-			typeName,
-			getSymbolicMangledNameLength(typeName),
-			genericContext: genericContext,
-			genericArguments: genericArguments?.assumingMemoryBound(to: UnsafeRawPointer?.self))
+		let length = getSymbolicMangledNameLength(typeName)
+		let arguments = genericArguments?.assumingMemoryBound(to: UnsafeRawPointer?.self)
+		let metadataPtr = swift_getTypeByMangledNameInContext(typeName, length, genericContext, arguments)
 
 		return unsafeBitCast(metadataPtr, to: Any.Type.self)
 	}
 
 	func getSymbolicMangledNameLength(_ base: UnsafeRawPointer) -> Int32 {
-					var end = base
-					while let current = Optional(end.load(as: UInt8.self)), current != 0 {
-							end += 1
-							if current >= 0x1 && current <= 0x17 {
-									end += 4
-							} else if current >= 0x18 && current <= 0x1F {
-									end += MemoryLayout<Int>.size
-							}
-					}
-
-					return Int32(end - base)
+		var end = base
+		while let current = Optional(end.load(as: UInt8.self)), current != 0 {
+			end += 1
+			if current >= 0x1, current <= 0x17 {
+				end += 4
+			} else if current >= 0x18, current <= 0x1f {
+				end += MemoryLayout<Int>.size
 			}
+		}
+
+		return Int32(end - base)
+	}
 }
 
 struct FieldDescriptor {
@@ -149,7 +160,7 @@ struct FieldDescriptor {
 	var _kind: UInt16
 	var fieldRecordSize: Int16
 	var numFields: Int32
-	var fields: [FieldRecord]
+	var fields: Vector<FieldRecord>
 }
 
 protocol MetadataType {
@@ -158,6 +169,12 @@ protocol MetadataType {
 	var pointer: UnsafeMutablePointer<Layout> { get set }
 
 	init(pointer: UnsafeMutablePointer<Layout>)
+}
+
+extension MetadataType {
+	init(type: Any.Type) {
+		self = Self(pointer: unsafeBitCast(type, to: UnsafeMutablePointer<Layout>.self))
+	}
 }
 
 protocol MetadataLayoutType {
@@ -183,21 +200,21 @@ extension NominalMetadataType {
 	}
 
 	var isGeneric: Bool {
-		return (pointer.pointee.typeDescriptor.pointee.flags & 0x80) != 0
+		(pointer.pointee.typeDescriptor.pointee.flags & 0x80) != 0
 	}
 
 	mutating func mangledName() -> String {
-		return String(cString: pointer.pointee.typeDescriptor.pointee.mangledName.advanced())
+		String(cString: pointer.pointee.typeDescriptor.pointee.mangledName.advanced())
 	}
 
 	mutating func numberOfFields() -> Int {
-		return Int(pointer.pointee.typeDescriptor.pointee.numberOfFields)
+		Int(pointer.pointee.typeDescriptor.pointee.numberOfFields)
 	}
 
 	mutating func fieldOffsets() -> [Int] {
-		return pointer.pointee.typeDescriptor.pointee
+		pointer.pointee.typeDescriptor.pointee
 			.offsetToTheFieldOffsetVector
-			.vector(metadata: pointer.raw.assumingMemoryBound(to: Int.self), n: numberOfFields())
+			.vector(metadata: pointer.raw.assumingMemoryBound(to: Int.self), count: numberOfFields())
 			.map(numericCast)
 	}
 
@@ -209,26 +226,29 @@ extension NominalMetadataType {
 
 		let genericVector = genericArgumentVector()
 
-		return (0 ..< numberOfFields()).map { i in
-			var record = fieldDescriptor
+		return (0 ..< numberOfFields()).map { index in
+			let record = fieldDescriptor
 				.pointee
-				.fields[i]
+				.fields
+				.element(at: index)
 
 			return PropertyInfo(
-				name: record.fieldName(),
-				type: record.type(
+				name: record.pointee.fieldName(),
+				type: record.pointee.type(
 					genericContext: pointer.pointee.typeDescriptor,
 					genericArguments: genericVector
 				),
-				isVar: record.isVar,
-				offset: offsets[i],
+				isVar: record.pointee.isVar,
+				offset: offsets[index],
 				ownerType: unsafeBitCast(pointer, to: Any.Type.self)
 			)
 		}
 	}
 
 	func genericArguments() -> UnsafeMutableBufferPointer<Any.Type> {
-		guard isGeneric else { return .init(start: nil, count: 0) }
+		guard isGeneric else {
+			return .init(start: nil, count: 0)
+		}
 
 		let count = pointer.pointee
 			.typeDescriptor
@@ -236,12 +256,49 @@ extension NominalMetadataType {
 			.genericContextHeader
 			.base
 			.numberOfParams
-		return genericArgumentVector().buffer(n: Int(count))
+		return genericArgumentVector().buffer(count: Int(count))
 	}
 
 	func genericArgumentVector() -> UnsafeMutablePointer<Any.Type> {
-		return pointer
+		pointer
 			.advanced(by: genericArgumentOffset, wordSize: MemoryLayout<UnsafeRawPointer>.size)
 			.assumingMemoryBound(to: Any.Type.self)
 	}
+}
+
+struct Vector<Element> {
+	var element: Element
+
+	mutating func vector(count: Int) -> UnsafeBufferPointer<Element> {
+		withUnsafePointer(to: &self) {
+			$0.withMemoryRebound(to: Element.self, capacity: 1) { start in
+				start.buffer(count: count)
+			}
+		}
+	}
+
+	mutating func element(at index: Int) -> UnsafeMutablePointer<Element> {
+		withUnsafePointer(to: &self) {
+			$0.raw.assumingMemoryBound(to: Element.self).advanced(by: index).mutable
+		}
+	}
+}
+
+protocol Setters {}
+extension Setters {
+	static func set(value: Any, pointer: UnsafeMutableRawPointer, initialize: Bool = false) {
+		if let value = value as? Self {
+			let boundPointer = pointer.assumingMemoryBound(to: self)
+			if initialize {
+				boundPointer.initialize(to: value)
+			} else {
+				boundPointer.pointee = value
+			}
+		}
+	}
+}
+
+func setters(type: Any.Type) -> Setters.Type {
+	let container = ProtocolTypeContainer(type: type, witnessTable: 0)
+	return unsafeBitCast(container, to: Setters.Type.self)
 }

@@ -1,49 +1,19 @@
-import Foundation
 import Defaults
+import Foundation
 import XCTest
 
 public struct User: Defaults.Serializable, Hashable, Equatable {
 	var username: String
 	var password: String
-
-	public static let bridge = DefaultsUserBridge()
-}
-
-public final class DefaultsUserBridge: Defaults.Bridge {
-	// swiftlint:disable discouraged_optional_collection
-	public func serialize(_ value: User?) -> [String: String]? {
-		guard let value = value else {
-			return nil
-		}
-
-		return ["username": value.username, "password": value.password]
-	}
-
-	// swiftlint:disable discouraged_optional_collection
-	public func deserialize(_ object: [String: String]?) -> User? {
-		guard
-			let object = object,
-			let username = object["username"],
-			let password = object["password"]
-		else {
-			return nil
-		}
-
-	init(username: String, password: String) {
-		self.username = username
-		self.password = password
-		self.id = 0
-	}
 }
 
 private let fixtureCustomBridge = User(username: "hank121314", password: "123456")
 
 extension Defaults.Keys {
-	fileprivate static let customBridge = Key<User>("customBridge", default: fixtureCustomBridge)
-	fileprivate static let customBridgeArray = Key<[User]>("array_customBridge", default: [fixtureCustomBridge])
-	fileprivate static let customBridgeDictionary = Key<[String: User]>("dictionary_customBridge", default: ["0": fixtureCustomBridge])
+	static let customBridge = Key<User>("customBridge", default: fixtureCustomBridge)
+	static let customBridgeArray = Key<[User]>("array_customBridge", default: [fixtureCustomBridge])
+	static let customBridgeDictionary = Key<[String: User]>("dictionary_customBridge", default: ["0": fixtureCustomBridge])
 }
-
 
 final class DefaultsCustomBridge: XCTestCase {
 	override func setUp() {

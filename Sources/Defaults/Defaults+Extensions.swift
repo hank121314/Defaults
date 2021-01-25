@@ -6,9 +6,9 @@ import AppKit
 import UIKit
 #endif
 
-public extension DefaultsSerializable {
-	static var isNativelySupportedType: Bool { false }
-	static var bridge: Defaults.ObjectBridge<Self> { return Defaults.ObjectBridge() }
+extension DefaultsSerializable {
+	public static var isNativelySupportedType: Bool { false }
+	public static var bridge: Defaults.ObjectBridge<Self> { Defaults.ObjectBridge() }
 }
 
 extension Data: Defaults.Serializable {
