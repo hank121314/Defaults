@@ -5,29 +5,12 @@ import XCTest
 struct User: Defaults.Serializable, Hashable, Equatable {
 	var username: String
 	var password: String
-	
-	public static let bridge = DefaultsUserBridge()
-}
+	var id: Int
 
-final class DefaultsUserBridge: Defaults.Bridge {
-	public func serialize(_ value: User?) -> [String: String]? {
-		guard let value = value else {
-			return nil
-		}
-
-		return ["username": value.username, "password": value.password]
-	}
-
-	public func deserialize(_ object: [String: String]?) -> User? {
-		guard
-			let object = object,
-			let username = object["username"],
-			let password = object["password"]
-		else {
-			return nil
-		}
-
-		return User(username: username, password: password)
+	init(username: String, password: String) {
+		self.username = username
+		self.password = password
+		self.id = 0
 	}
 }
 

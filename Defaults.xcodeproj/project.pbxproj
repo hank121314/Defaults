@@ -41,6 +41,10 @@
 		719F5E21258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719F5E1F258AFB2F004540F6 /* Defaults+Bridge.swift */; };
 		719F5E22258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719F5E1F258AFB2F004540F6 /* Defaults+Bridge.swift */; };
 		719F5E23258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719F5E1F258AFB2F004540F6 /* Defaults+Bridge.swift */; };
+		71A1449925BAD4CC0042C6B7 /* CBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A1449825BAD4CC0042C6B7 /* CBridge.swift */; };
+		71A1449A25BAD4CC0042C6B7 /* CBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A1449825BAD4CC0042C6B7 /* CBridge.swift */; };
+		71A1449B25BAD4CC0042C6B7 /* CBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A1449825BAD4CC0042C6B7 /* CBridge.swift */; };
+		71A1449C25BAD4CC0042C6B7 /* CBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A1449825BAD4CC0042C6B7 /* CBridge.swift */; };
 		71B96F1E259986F100079F69 /* DefaultsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B96F1D259986F100079F69 /* DefaultsCodableTests.swift */; };
 		71B96F1F259986F100079F69 /* DefaultsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B96F1D259986F100079F69 /* DefaultsCodableTests.swift */; };
 		71B96F20259986F100079F69 /* DefaultsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B96F1D259986F100079F69 /* DefaultsCodableTests.swift */; };
@@ -50,6 +54,10 @@
 		71C5602E259C2A950053CCB3 /* DefaultsSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71C5602D259C2A950053CCB3 /* DefaultsSetTests.swift */; };
 		71C5602F259C2A950053CCB3 /* DefaultsSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71C5602D259C2A950053CCB3 /* DefaultsSetTests.swift */; };
 		71C56030259C2A950053CCB3 /* DefaultsSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71C5602D259C2A950053CCB3 /* DefaultsSetTests.swift */; };
+		71D7B5B425BE55F3006727D3 /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D7B5B325BE55F3006727D3 /* Runtime.swift */; };
+		71D7B5B525BE55F3006727D3 /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D7B5B325BE55F3006727D3 /* Runtime.swift */; };
+		71D7B5B625BE55F3006727D3 /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D7B5B325BE55F3006727D3 /* Runtime.swift */; };
+		71D7B5B725BE55F3006727D3 /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D7B5B325BE55F3006727D3 /* Runtime.swift */; };
 		71F002F925959000001A1864 /* DefaultsNSSecureCodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F002F825959000001A1864 /* DefaultsNSSecureCodingTests.swift */; };
 		71F002FA25959000001A1864 /* DefaultsNSSecureCodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F002F825959000001A1864 /* DefaultsNSSecureCodingTests.swift */; };
 		71F002FB25959000001A1864 /* DefaultsNSSecureCodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F002F825959000001A1864 /* DefaultsNSSecureCodingTests.swift */; };
@@ -138,10 +146,12 @@
 		718B783E25917D09004FF90D /* Defaults+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Defaults+Extensions.swift"; sourceTree = "<group>"; };
 		7191AD862591977700AD472F /* DefaultsArrayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsArrayTests.swift; sourceTree = "<group>"; };
 		719F5E1F258AFB2F004540F6 /* Defaults+Bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Defaults+Bridge.swift"; sourceTree = "<group>"; };
+		71A1449825BAD4CC0042C6B7 /* CBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBridge.swift; sourceTree = "<group>"; };
 		71B96F1D259986F100079F69 /* DefaultsCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsCodableTests.swift; sourceTree = "<group>"; };
 		71C55FF4259C13190053CCB3 /* DefaultsNSColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsNSColorTests.swift; sourceTree = "<group>"; };
 		71C56006259C25080053CCB3 /* DefaultsUIColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsUIColorTests.swift; sourceTree = "<group>"; };
 		71C5602D259C2A950053CCB3 /* DefaultsSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsSetTests.swift; sourceTree = "<group>"; };
+		71D7B5B325BE55F3006727D3 /* Runtime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Runtime.swift; sourceTree = "<group>"; };
 		71F002F825959000001A1864 /* DefaultsNSSecureCodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsNSSecureCodingTests.swift; sourceTree = "<group>"; };
 		71F003032595B460001A1864 /* DefaultsCustomBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsCustomBridgeTests.swift; sourceTree = "<group>"; };
 		71F0030E2595C7B8001A1864 /* DefaultsEnumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsEnumTests.swift; sourceTree = "<group>"; };
@@ -312,6 +322,8 @@
 				718B783225917CCA004FF90D /* Defaults+Protocol.swift */,
 				718B783E25917D09004FF90D /* Defaults+Extensions.swift */,
 				719F5E1F258AFB2F004540F6 /* Defaults+Bridge.swift */,
+				71A1449825BAD4CC0042C6B7 /* CBridge.swift */,
+				71D7B5B325BE55F3006727D3 /* Runtime.swift */,
 			);
 			path = Defaults;
 			sourceTree = "<group>";
@@ -604,6 +616,8 @@
 				E286D0C823B8D54C00570D1E /* Observation+Combine.swift in Sources */,
 				E38C9F28244ADA2F00A6737A /* SwiftUI.swift in Sources */,
 				8933C7851EB5B820000D00A4 /* Defaults.swift in Sources */,
+				71A1449A25BAD4CC0042C6B7 /* CBridge.swift in Sources */,
+				71D7B5B525BE55F3006727D3 /* Runtime.swift in Sources */,
 				E339B3B92449F10D00E7A40A /* UserDefaults.swift in Sources */,
 				719F5E21258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */,
 				E3EB3E35216507AE0033B089 /* Observation.swift in Sources */,
@@ -643,6 +657,8 @@
 				E286D0CA23B8D54E00570D1E /* Observation+Combine.swift in Sources */,
 				E38C9F2A244ADA2F00A6737A /* SwiftUI.swift in Sources */,
 				E3EB3E3A216507C40033B089 /* Utilities.swift in Sources */,
+				71A1449C25BAD4CC0042C6B7 /* CBridge.swift in Sources */,
+				71D7B5B725BE55F3006727D3 /* Runtime.swift in Sources */,
 				E339B3BB2449F10D00E7A40A /* UserDefaults.swift in Sources */,
 				719F5E23258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */,
 				E3EB3E37216507B50033B089 /* Observation.swift in Sources */,
@@ -660,6 +676,8 @@
 				E286D0C923B8D54D00570D1E /* Observation+Combine.swift in Sources */,
 				E38C9F29244ADA2F00A6737A /* SwiftUI.swift in Sources */,
 				E3EB3E3B216507C40033B089 /* Utilities.swift in Sources */,
+				71A1449B25BAD4CC0042C6B7 /* CBridge.swift in Sources */,
+				71D7B5B625BE55F3006727D3 /* Runtime.swift in Sources */,
 				E339B3BA2449F10D00E7A40A /* UserDefaults.swift in Sources */,
 				719F5E22258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */,
 				E3EB3E38216507B60033B089 /* Observation.swift in Sources */,
@@ -677,6 +695,8 @@
 				E286D0C723B8D51100570D1E /* Observation+Combine.swift in Sources */,
 				E38C9F27244ADA2F00A6737A /* SwiftUI.swift in Sources */,
 				E3EB3E39216507C30033B089 /* Utilities.swift in Sources */,
+				71A1449925BAD4CC0042C6B7 /* CBridge.swift in Sources */,
+				71D7B5B425BE55F3006727D3 /* Runtime.swift in Sources */,
 				E339B3B82449F10D00E7A40A /* UserDefaults.swift in Sources */,
 				719F5E20258AFB2F004540F6 /* Defaults+Bridge.swift in Sources */,
 				E3EB3E36216507B50033B089 /* Observation.swift in Sources */,

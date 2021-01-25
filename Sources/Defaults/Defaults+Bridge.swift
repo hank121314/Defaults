@@ -5,8 +5,8 @@ import AppKit
 import UIKit
 #endif
 
-extension Defaults.CodableBridge {
-	public func serialize(_ value: Value?) -> Serializable? {
+public extension Defaults.CodableBridge {
+	func serialize(_ value: Value?) -> Serializable? {
 		guard let value = value else {
 			return nil
 		}
@@ -23,7 +23,7 @@ extension Defaults.CodableBridge {
 		}
 	}
 
-	public func deserialize(_ object: Serializable?) -> Value? {
+	func deserialize(_ object: Serializable?) -> Value? {
 		guard let jsonString = object else {
 			return nil
 		}
@@ -32,18 +32,73 @@ extension Defaults.CodableBridge {
 	}
 }
 
-extension Defaults {
-	public struct TopLevelCodableBridge<Value: Codable>: CodableBridge {}
+public extension Defaults {
+	struct ObjectBridge<Value>: Defaults.Bridge {
+		public typealias Value = Value
+		public typealias Serializable = [String: Any]
+
+		public func serialize(_ value: Value?) -> Serializable? {
+			guard let value = value else {
+				return nil
+			}
+
+			let children = Array(Mirror(reflecting: value).children).reversed()
+
+			return children.reduce([:]) { (memo: [String: Any], child: Mirror.Child) in
+				guard let label = child.label else {
+					return memo
+				}
+				var result = memo
+				result[label] = child.value
+				return result
+			}
+		}
+
+		public func deserialize(_ object: Serializable?) -> Value? {
+			guard let dictionary = object else {
+				return nil
+			}
+
+
+//			let pointer = UnsafeMutableRawPointer.allocate(byteCount: MemoryLayout<Value>.stride, alignment: MemoryLayout<Value>.alignment)
+//			defer {
+//				pointer.deallocate()
+//			}
+//
+//			var stride = 0
+//			dictionary.forEach { (_: String, value: Any) in
+//
+//				guard let value = value as? String
+//				else {
+//					return
+//				}
+//
+//				let next = pointer.advanced(by: stride)
+//				let raw = next.bindMemory(to: Any.self, capacity: 1)
+//				let mutable = UnsafeMutablePointer<Any>(mutating: raw)
+//				mutable.initialize(to: value)
+//				stride = MemoryLayout.stride(ofValue: value)
+//			}
+//
+//			let instance = pointer.load(as: Value.self)
+//
+//			print(instance)
+
+			return nil
+		}
+	}
+
+	struct TopLevelCodableBridge<Value: Codable>: CodableBridge {}
 
 	// RawRepresentableCodableBridge is indeed because if `enum SomeEnum: String, Codable, Defaults.Serializable`
 	// the compiler will confuse between RawRepresentableBridge and TopLevelCodableBridge
-	public struct RawRepresentableCodableBridge<Value: RawRepresentable & Codable>: CodableBridge {}
+	struct RawRepresentableCodableBridge<Value: RawRepresentable & Codable>: CodableBridge {}
 
-	public struct URLBridge: CodableBridge {
+	struct URLBridge: CodableBridge {
 		public typealias Value = URL
 	}
 
-	public struct RawRepresentableBridge<Value: RawRepresentable>: Defaults.Bridge {
+	struct RawRepresentableBridge<Value: RawRepresentable>: Defaults.Bridge {
 		public typealias Value = Value
 		public typealias Serializable = Value.RawValue
 
@@ -60,10 +115,10 @@ extension Defaults {
 		}
 	}
 
-	public struct NSSecureCodingBridge<Value: NSSecureCoding>: Defaults.Bridge {
+	struct NSSecureCodingBridge<Value: NSSecureCoding>: Defaults.Bridge {
 		public typealias Value = Value
 		public typealias Serializable = Data
-		
+
 		public func serialize(_ value: Value?) -> Serializable? {
 			guard let object = value else {
 				return nil
@@ -78,7 +133,7 @@ extension Defaults {
 				keyedArchiver.requiresSecureCoding = true
 				keyedArchiver.encode(object, forKey: NSKeyedArchiveRootObjectKey)
 				return keyedArchiver.encodedData
-			};
+			}
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
@@ -95,7 +150,7 @@ extension Defaults {
 		}
 	}
 
-	public struct OptionalBridge<Wrapped: Defaults.Serializable>: Defaults.Bridge {
+	struct OptionalBridge<Wrapped: Defaults.Serializable>: Defaults.Bridge {
 		public typealias Value = Wrapped.Value
 		public typealias Serializable = Wrapped.Serializable
 
@@ -108,7 +163,7 @@ extension Defaults {
 		}
 	}
 
-	public struct ArrayBridge<Element: Defaults.Serializable>: Defaults.Bridge {
+	struct ArrayBridge<Element: Defaults.Serializable>: Defaults.Bridge {
 		public typealias Value = [Element]
 		public typealias Serializable = [Element.Serializable]
 
@@ -117,18 +172,18 @@ extension Defaults {
 				return nil
 			}
 
-			return array.map { Element.bridge.serialize($0) } .compact()
+			return array.map { Element.bridge.serialize($0) }.compact()
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
-			object?.map { Element.bridge.deserialize($0) } .compact() as? Value
+			object?.map { Element.bridge.deserialize($0) }.compact() as? Value
 		}
 	}
 
-	public struct DictionaryBridge<Element: Defaults.Serializable>: Defaults.Bridge {
+	struct DictionaryBridge<Element: Defaults.Serializable>: Defaults.Bridge {
 		public typealias Value = [String: Element]
 		public typealias Serializable = [String: Element.Serializable]
-		
+
 		public func serialize(_ value: Value?) -> Serializable? {
 			guard let dictionary = value as? [String: Element.Value] else {
 				return nil
@@ -150,7 +205,7 @@ extension Defaults {
 		}
 	}
 
-	public struct SetBridge<Element: Defaults.Serializable & Hashable>: Defaults.Bridge {
+	struct SetBridge<Element: Defaults.Serializable & Hashable>: Defaults.Bridge {
 		public typealias Value = Set<Element>
 		public typealias Serializable = Any
 
@@ -163,7 +218,7 @@ extension Defaults {
 				return Array(set)
 			}
 
-			return set.map { Element.bridge.serialize($0 as? Element.Value) } .compact()
+			return set.map { Element.bridge.serialize($0 as? Element.Value) }.compact()
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
@@ -177,7 +232,7 @@ extension Defaults {
 
 			guard
 				let array = object as? [Element.Serializable],
-				let elements = array.map({ Element.bridge.deserialize($0)}) .compact() as? [Element]
+				let elements = array.map({ Element.bridge.deserialize($0) }).compact() as? [Element]
 			else {
 				return nil
 			}
@@ -186,7 +241,7 @@ extension Defaults {
 		}
 	}
 
-	public struct SetAlgebraBridge<Value: Defaults.SetAlgebraSerializable>: Defaults.Bridge where Value.Element: Defaults.Serializable {
+	struct SetAlgebraBridge<Value: Defaults.SetAlgebraSerializable>: Defaults.Bridge where Value.Element: Defaults.Serializable {
 		public typealias Value = Value
 		public typealias Element = Value.Element
 		public typealias Serializable = Any
@@ -209,7 +264,7 @@ extension Defaults {
 					return nil
 				}
 
-				return Value.init(array)
+				return Value(array)
 			}
 
 			guard
@@ -219,11 +274,11 @@ extension Defaults {
 				return nil
 			}
 
-			return Value.init(elements)
+			return Value(elements)
 		}
 	}
 
-	public struct CollectionBridge<Value: Defaults.CollectionSerializable>: Defaults.Bridge where Value.Element: Defaults.Serializable {
+	struct CollectionBridge<Value: Defaults.CollectionSerializable>: Defaults.Bridge where Value.Element: Defaults.Serializable {
 		public typealias Value = Value
 		public typealias Element = Value.Element
 		public typealias Serializable = Any
@@ -246,7 +301,7 @@ extension Defaults {
 					return nil
 				}
 
-				return Value.init(array)
+				return Value(array)
 			}
 
 			guard
@@ -256,7 +311,7 @@ extension Defaults {
 				return nil
 			}
 
-			return Value.init(elements)
+			return Value(elements)
 		}
 	}
 }
