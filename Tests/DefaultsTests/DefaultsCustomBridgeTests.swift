@@ -2,10 +2,32 @@ import Foundation
 import Defaults
 import XCTest
 
-struct User: Defaults.Serializable, Hashable, Equatable {
+public struct User: Defaults.Serializable, Hashable, Equatable {
 	var username: String
 	var password: String
-	var id: Int
+
+	public static let bridge = DefaultsUserBridge()
+}
+
+public final class DefaultsUserBridge: Defaults.Bridge {
+	// swiftlint:disable discouraged_optional_collection
+	public func serialize(_ value: User?) -> [String: String]? {
+		guard let value = value else {
+			return nil
+		}
+
+		return ["username": value.username, "password": value.password]
+	}
+
+	// swiftlint:disable discouraged_optional_collection
+	public func deserialize(_ object: [String: String]?) -> User? {
+		guard
+			let object = object,
+			let username = object["username"],
+			let password = object["password"]
+		else {
+			return nil
+		}
 
 	init(username: String, password: String) {
 		self.username = username
@@ -30,7 +52,7 @@ final class DefaultsCustomBridge: XCTestCase {
 	}
 
 	override func tearDown() {
-		super.setUp()
+		super.tearDown()
 		Defaults.removeAll()
 	}
 
@@ -50,7 +72,7 @@ final class DefaultsCustomBridge: XCTestCase {
 	}
 
 	func testArrayKey() {
-		let user = User(username: "hank121314" , password: "123456")
+		let user = User(username: "hank121314", password: "123456")
 		let key = Defaults.Key<[User]>("independentCustomBridgeArrayKey", default: [user])
 		XCTAssertEqual(Defaults[key][0], user)
 		let newUser = User(username: "sindresorhus", password: "123456789")
@@ -100,7 +122,7 @@ final class DefaultsCustomBridge: XCTestCase {
 	}
 
 	func testDictionaryKey() {
-		let key = Defaults.Key<[String: User]>("independentCustomBridgeDictionaryKey", default: ["0": fixtureCustomBridge]);
+		let key = Defaults.Key<[String: User]>("independentCustomBridgeDictionaryKey", default: ["0": fixtureCustomBridge])
 		XCTAssertEqual(Defaults[key]["0"], fixtureCustomBridge)
 		let newUser = User(username: "sindresorhus", password: "123456789")
 		Defaults[key]["0"] = newUser
@@ -108,7 +130,7 @@ final class DefaultsCustomBridge: XCTestCase {
 	}
 
 	func testDictionaryOptionalKey() {
-		let key = Defaults.Key<[String: User]?>("independentCustomBridgeDictionaryOptionalKey");
+		let key = Defaults.Key<[String: User]?>("independentCustomBridgeDictionaryOptionalKey")
 		XCTAssertNil(Defaults[key])
 		Defaults[key] = ["0": fixtureCustomBridge]
 		XCTAssertEqual(Defaults[key]?["0"], fixtureCustomBridge)
@@ -159,9 +181,9 @@ final class DefaultsCustomBridge: XCTestCase {
 			.collect(2)
 
 		let cancellable = publisher.sink { tuples in
-			for (i, expected) in [(fixtureCustomBridge, newUser), (newUser, fixtureCustomBridge)].enumerated() {
-				XCTAssertEqual(expected.0, tuples[i].0)
-				XCTAssertEqual(expected.1, tuples[i].1)
+			for (index, expected) in [(fixtureCustomBridge, newUser), (newUser, fixtureCustomBridge)].enumerated() {
+				XCTAssertEqual(expected.0, tuples[index].0)
+				XCTAssertEqual(expected.1, tuples[index].1)
 			}
 
 			expect.fulfill()
@@ -188,9 +210,9 @@ final class DefaultsCustomBridge: XCTestCase {
 		let expectedValue: [(User?, User?)] = [(nil, fixtureCustomBridge), (fixtureCustomBridge, newUser), (newUser, nil)]
 
 		let cancellable = publisher.sink { tuples in
-			for (i, expected) in expectedValue.enumerated() {
-				XCTAssertEqual(expected.0, tuples[i].0)
-				XCTAssertEqual(expected.1, tuples[i].1)
+			for (index, expected) in expectedValue.enumerated() {
+				XCTAssertEqual(expected.0, tuples[index].0)
+				XCTAssertEqual(expected.1, tuples[index].1)
 			}
 
 			expect.fulfill()
@@ -216,9 +238,9 @@ final class DefaultsCustomBridge: XCTestCase {
 			.collect(2)
 
 		let cancellable = publisher.sink { tuples in
-			for (i, expected) in [([fixtureCustomBridge], [newUser]), ([newUser], [newUser, fixtureCustomBridge])].enumerated() {
-				XCTAssertEqual(expected.0, tuples[i].0)
-				XCTAssertEqual(expected.1, tuples[i].1)
+			for (index, expected) in [([fixtureCustomBridge], [newUser]), ([newUser], [newUser, fixtureCustomBridge])].enumerated() {
+				XCTAssertEqual(expected.0, tuples[index].0)
+				XCTAssertEqual(expected.1, tuples[index].1)
 			}
 
 			expect.fulfill()
@@ -243,9 +265,9 @@ final class DefaultsCustomBridge: XCTestCase {
 			.collect(2)
 
 		let cancellable = publisher.sink { tuples in
-			for (i, expected) in [(fixtureCustomBridge, newUser), (newUser, fixtureCustomBridge)].enumerated() {
-				XCTAssertEqual(expected.0, tuples[i].0["0"])
-				XCTAssertEqual(expected.1, tuples[i].1["0"])
+			for (index, expected) in [(fixtureCustomBridge, newUser), (newUser, fixtureCustomBridge)].enumerated() {
+				XCTAssertEqual(expected.0, tuples[index].0["0"])
+				XCTAssertEqual(expected.1, tuples[index].1["0"])
 			}
 
 			expect.fulfill()
@@ -273,7 +295,7 @@ final class DefaultsCustomBridge: XCTestCase {
 
 		Defaults[key] = newUser
 		observation.invalidate()
-		
+
 		waitForExpectations(timeout: 10)
 	}
 

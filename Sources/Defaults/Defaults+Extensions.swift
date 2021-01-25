@@ -38,7 +38,6 @@ extension Float: Defaults.Serializable {
 extension String: Defaults.Serializable {
 	public static let isNativelySupportedType = true
 }
-
 extension CGFloat: Defaults.Serializable {
 	public static let isNativelySupportedType = true
 }
@@ -79,47 +78,47 @@ extension URL: Defaults.Serializable {
 	public static let bridge = Defaults.URLBridge()
 }
 
-public extension Defaults.Serializable where Self: Defaults.CollectionSerializable, Element: Defaults.Serializable {
-	static var bridge: Defaults.CollectionBridge<Self> { return Defaults.CollectionBridge() }
+extension Defaults.Serializable where Self: Defaults.CollectionSerializable, Element: Defaults.Serializable {
+	public static var bridge: Defaults.CollectionBridge<Self> { Defaults.CollectionBridge() }
 }
 
-public extension Defaults.Serializable where Self: Defaults.SetAlgebraSerializable, Element: Defaults.Serializable & Hashable {
-	static var bridge: Defaults.SetAlgebraBridge<Self> { return Defaults.SetAlgebraBridge() }
+extension Defaults.Serializable where Self: Defaults.SetAlgebraSerializable, Element: Defaults.Serializable & Hashable {
+	public static var bridge: Defaults.SetAlgebraBridge<Self> { Defaults.SetAlgebraBridge() }
 }
 
-public extension Defaults.Serializable where Self: Codable {
-	static var bridge: Defaults.TopLevelCodableBridge<Self> { return Defaults.TopLevelCodableBridge() }
+extension Defaults.Serializable where Self: Codable {
+	public static var bridge: Defaults.TopLevelCodableBridge<Self> { Defaults.TopLevelCodableBridge() }
 }
 
-public extension Defaults.Serializable where Self: RawRepresentable {
-	static var bridge: Defaults.RawRepresentableBridge<Self> { return Defaults.RawRepresentableBridge() }
+extension Defaults.Serializable where Self: RawRepresentable {
+	public static var bridge: Defaults.RawRepresentableBridge<Self> { Defaults.RawRepresentableBridge() }
 }
 
-public extension Defaults.Serializable where Self: RawRepresentable & Codable {
-	static var bridge: Defaults.RawRepresentableCodableBridge<Self> { return Defaults.RawRepresentableCodableBridge() }
+extension Defaults.Serializable where Self: RawRepresentable & Codable {
+	public static var bridge: Defaults.RawRepresentableCodableBridge<Self> { Defaults.RawRepresentableCodableBridge() }
 }
 
-public extension Defaults.Serializable where Self: NSSecureCoding {
-	static var bridge: Defaults.NSSecureCodingBridge<Self> { return Defaults.NSSecureCodingBridge() }
+extension Defaults.Serializable where Self: NSSecureCoding {
+	public static var bridge: Defaults.NSSecureCodingBridge<Self> { Defaults.NSSecureCodingBridge() }
 }
 
 extension Set: Defaults.Serializable where Element: Defaults.Serializable {
-	public static var bridge: Defaults.SetBridge<Element> { return Defaults.SetBridge() }
+	public static var bridge: Defaults.SetBridge<Element> { Defaults.SetBridge() }
 }
 
 extension Optional: Defaults.Serializable where Wrapped: Defaults.Serializable {
 	public static var isNativelySupportedType: Bool { Wrapped.isNativelySupportedType }
-	public static var bridge: Defaults.OptionalBridge<Wrapped> { return Defaults.OptionalBridge() }
+	public static var bridge: Defaults.OptionalBridge<Wrapped> { Defaults.OptionalBridge() }
 }
 
 extension Array: Defaults.Serializable where Element: Defaults.Serializable {
 	public static var isNativelySupportedType: Bool { Element.isNativelySupportedType }
-	public static var bridge: Defaults.ArrayBridge<Element> { return Defaults.ArrayBridge() }
+	public static var bridge: Defaults.ArrayBridge<Element> { Defaults.ArrayBridge() }
 }
 
 extension Dictionary: Defaults.Serializable where Key == String, Value: Defaults.Serializable {
 	public static var isNativelySupportedType: Bool { Value.isNativelySupportedType }
-	public static var bridge: Defaults.DictionaryBridge<Value> { return Defaults.DictionaryBridge() }
+	public static var bridge: Defaults.DictionaryBridge<Value> { Defaults.DictionaryBridge() }
 }
 
 #if os(macOS)

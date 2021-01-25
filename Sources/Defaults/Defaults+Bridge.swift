@@ -103,7 +103,7 @@ public extension Defaults {
 		public typealias Serializable = Value.RawValue
 
 		public func serialize(_ value: Value?) -> Serializable? {
-			return value?.rawValue
+			value?.rawValue
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
@@ -180,28 +180,24 @@ public extension Defaults {
 		}
 	}
 
-	struct DictionaryBridge<Element: Defaults.Serializable>: Defaults.Bridge {
-		public typealias Value = [String: Element]
+	public struct DictionaryBridge<Element: Defaults.Serializable>: Defaults.Bridge {
+		public typealias Value = [String: Element.Value]
 		public typealias Serializable = [String: Element.Serializable]
 
 		public func serialize(_ value: Value?) -> Serializable? {
-			guard let dictionary = value as? [String: Element.Value] else {
+			guard let dictionary = value else {
 				return nil
 			}
 
-			return dictionary.reduce([:]) { (memo: Serializable, tuple: (key: String, value: Element.Value)) in
-				var result = memo
-				result[tuple.key] = Element.bridge.serialize(tuple.value)
-				return result
+			return dictionary.reduce(into: Serializable()) { memo, tuple in
+				memo[tuple.key] = Element.bridge.serialize(tuple.value)
 			}
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
-			object?.reduce([:]) { (memo: [String: Element.Value], tuple: (key: String, value: Element.Serializable)) in
-				var result = memo
-				result[tuple.key] = Element.bridge.deserialize(tuple.value)
-				return result
-			} as? Value
+			object?.reduce(into: Value()) { memo, tuple in
+				memo[tuple.key] = Element.bridge.deserialize(tuple.value)
+			}
 		}
 	}
 
