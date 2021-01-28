@@ -42,36 +42,32 @@ extension Defaults {
 				return nil
 			}
 
-			let children = Array(Mirror(reflecting: value).children).reversed()
-
-			return children.reduce([:]) { (memo: [String: Any], child: Mirror.Child) in
+			return Mirror(reflecting: value).children.reduce(into: Serializable()) { memo, child in
 				guard let label = child.label else {
-					return memo
+					return
 				}
-				var result = memo
-				result[label] = child.value
-				return result
+				memo[label] = child.value
 			}
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {
-			guard let dictionary = object else {
+			guard let dictionary = object,
+						let info = typeInfo(of: Value.self)
+			else {
 				return nil
 			}
-
 
 			let pointer = UnsafeMutableRawPointer.allocate(byteCount: MemoryLayout<Value>.stride, alignment: MemoryLayout<Value>.alignment)
 			defer {
 				pointer.deallocate()
 			}
-			var metadata = StructMetadata(type: Value.self)
-			metadata.properties().forEach { property in
-				guard let value = dictionary[property.name] else {
+
+			dictionary.forEach { tuple in
+				guard let property = info.property(named: tuple.key) else {
 					return
 				}
-
 				let next = pointer.advanced(by: property.offset)
-				setters(type: property.type).set(value: value, pointer: next, initialize: true)
+				setters(type: property.type).set(value: tuple.value, pointer: next, initialize: true)
 			}
 
 			return pointer.load(as: Value.self)

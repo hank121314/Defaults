@@ -182,3 +182,22 @@ extension UnsafeMutablePointer {
 		self.raw.advanced(by: count * wordSize)
 	}
 }
+
+protocol Setters {}
+extension Setters {
+		static func set(value: Any, pointer: UnsafeMutableRawPointer, initialize: Bool = false) {
+				if let value = value as? Self {
+					let boundPointer = pointer.assumingMemoryBound(to: self)
+					if initialize {
+						boundPointer.initialize(to: value)
+					} else {
+						boundPointer.pointee = value
+					}
+				}
+		}
+}
+
+func setters(type: Any.Type) -> Setters.Type {
+		let container = ProtocolTypeContainer(type: type, witnessTable: 0)
+		return unsafeBitCast(container, to: Setters.Type.self)
+}
