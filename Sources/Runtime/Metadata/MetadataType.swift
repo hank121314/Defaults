@@ -1,6 +1,6 @@
 import Foundation
 
-protocol MetadataType: TypeInfoConvertible {
+protocol MetadataType: PropertyInfoConvertible {
 	associatedtype Layout: MetadataLayoutType
 
 	var pointer: UnsafeMutablePointer<Layout> { get set }

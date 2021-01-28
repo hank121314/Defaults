@@ -39,8 +39,6 @@
 		718B118025BFACF30036501E /* PropertyInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B117F25BFACF30036501E /* PropertyInfo.swift */; };
 		718B118925BFAEA30036501E /* Kind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B118825BFAEA30036501E /* Kind.swift */; };
 		718B119225BFB22A0036501E /* StructMetadataLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B119125BFB22A0036501E /* StructMetadataLayout.swift */; };
-		718B119B25BFB6DE0036501E /* TypeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B119A25BFB6DE0036501E /* TypeInfo.swift */; };
-		718B11A425BFB73A0036501E /* TypeInfoConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B11A325BFB73A0036501E /* TypeInfoConvertible.swift */; };
 		718B783325917CCA004FF90D /* Defaults+Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B783225917CCA004FF90D /* Defaults+Protocol.swift */; };
 		718B783425917CCA004FF90D /* Defaults+Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B783225917CCA004FF90D /* Defaults+Protocol.swift */; };
 		718B783525917CCA004FF90D /* Defaults+Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718B783225917CCA004FF90D /* Defaults+Protocol.swift */; };
@@ -167,8 +165,6 @@
 		718B117F25BFACF30036501E /* PropertyInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyInfo.swift; sourceTree = "<group>"; };
 		718B118825BFAEA30036501E /* Kind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kind.swift; sourceTree = "<group>"; };
 		718B119125BFB22A0036501E /* StructMetadataLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructMetadataLayout.swift; sourceTree = "<group>"; };
-		718B119A25BFB6DE0036501E /* TypeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeInfo.swift; sourceTree = "<group>"; };
-		718B11A325BFB73A0036501E /* TypeInfoConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeInfoConvertible.swift; sourceTree = "<group>"; };
 		718B783225917CCA004FF90D /* Defaults+Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Defaults+Protocol.swift"; sourceTree = "<group>"; };
 		718B783E25917D09004FF90D /* Defaults+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Defaults+Extensions.swift"; sourceTree = "<group>"; };
 		7191AD862591977700AD472F /* DefaultsArrayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsArrayTests.swift; sourceTree = "<group>"; };
@@ -337,8 +333,6 @@
 			children = (
 				718B117F25BFACF30036501E /* PropertyInfo.swift */,
 				718B118825BFAEA30036501E /* Kind.swift */,
-				718B119A25BFB6DE0036501E /* TypeInfo.swift */,
-				718B11A325BFB73A0036501E /* TypeInfoConvertible.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -795,7 +789,6 @@
 			files = (
 				711168D125BEAA5F00CC908D /* RelativeVectorPointer.swift in Sources */,
 				718B119225BFB22A0036501E /* StructMetadataLayout.swift in Sources */,
-				718B119B25BFB6DE0036501E /* TypeInfo.swift in Sources */,
 				E286D0C723B8D51100570D1E /* Observation+Combine.swift in Sources */,
 				E38C9F27244ADA2F00A6737A /* SwiftUI.swift in Sources */,
 				E3EB3E39216507C30033B089 /* Utilities.swift in Sources */,
@@ -817,7 +810,6 @@
 				E339B3B32449ED2000E7A40A /* Reset.swift in Sources */,
 				718B115B25BFA7890036501E /* Vector.swift in Sources */,
 				718B117625BFAC6C0036501E /* MetadataType.swift in Sources */,
-				718B11A425BFB73A0036501E /* TypeInfoConvertible.swift in Sources */,
 				718B118025BFACF30036501E /* PropertyInfo.swift in Sources */,
 				718B783325917CCA004FF90D /* Defaults+Protocol.swift in Sources */,
 			);

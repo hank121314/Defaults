@@ -56,7 +56,7 @@ extension Defaults {
 
 		public func deserialize(_ object: Serializable?) -> Value? {
 			guard let dictionary = object,
-						let info = typeInfo(of: Value.self)
+						let info = propertyInfo(of: Value.self)
 			else {
 				return nil
 			}
@@ -67,7 +67,7 @@ extension Defaults {
 			}
 
 			dictionary.forEach { tuple in
-				guard let property = info.property(named: tuple.key) else {
+				guard let property = info.first(where: { $0.name == tuple.key }) else {
 					return
 				}
 				let next = pointer.advanced(by: property.offset)
