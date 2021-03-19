@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: xcodebuild clean test -project Defaults.xcodeproj -scheme ${{ matrix.os }} -destination "platform=${{ matrix.destination }}" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        run: xcodebuild clean test -project Defaults.xcodeproj -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.destination }}" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
   lint:
     runs-on: ubuntu-latest
     steps:
