@@ -2,8 +2,9 @@ import Foundation
 
 extension UserDefaults {
 	func _get<Value: Defaults.Serializable>(_ key: String) -> Value? {
-		let anyObject = object(forKey: key)
-
+		guard let anyObject = object(forKey: key) else {
+			return nil
+		}
 		/// Return directly if anyObject can cast to Value, means `Value` is Native supported type.
 		if Value.isNativelySupportedType, let anyObject = anyObject as? Value {
 			return anyObject
