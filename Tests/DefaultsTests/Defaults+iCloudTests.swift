@@ -247,10 +247,12 @@ final class DefaultsICloudTests {
 
 	@Test
 	func testAddFromDetached() async {
-		let name = Defaults.Key<String>("testInitAddFromDetached_name", default: "0", suite: suite)
-		let quantity = Defaults.Key<Bool>("testInitAddFromDetached_quantity", default: false, suite: suite)
+		let name = Defaults.Key<String?>("testInitAddFromDetached_name", suite: suite)
+		let quantity = Defaults.Key<Bool?>("testInitAddFromDetached_quantity", suite: suite)
 		await Task.detached {
 			Defaults.iCloud.add(name, quantity)
+			Defaults[name] = "0"
+			Defaults[quantity] = true
 			Defaults.iCloud.syncWithoutWaiting()
 			await Defaults.iCloud.waitForSyncCompletion()
 		}.value
