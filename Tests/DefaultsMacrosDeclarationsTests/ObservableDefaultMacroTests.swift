@@ -8,11 +8,11 @@ import XCTest
 @testable import DefaultsMacros
 @testable import DefaultsMacrosDeclarations
 
-let testMacros: [String: Macro.Type] = [
+private let testMacros: [String: Macro.Type] = [
 	"ObservableDefault": ObservableDefaultMacro.self
 ]
 #else
-let testMacros: [String: Macro.Type] = [:]
+private let testMacros: [String: Macro.Type] = [:]
 #endif
 
 final class ObservableDefaultMacroTests: XCTestCase {

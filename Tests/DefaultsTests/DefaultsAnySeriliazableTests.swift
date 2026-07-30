@@ -2,7 +2,7 @@ import SwiftUI
 import Testing
 import Defaults
 
-private let suite_ = createSuite()
+private let suite_: UserDefaults = createSuite()
 
 private enum mime: String, Defaults.Serializable {
 	case JSON = "application/json"

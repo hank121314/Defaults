@@ -1,4 +1,5 @@
 /.build
+/.swiftlint-cache
 /Packages
 xcuserdata
 project.xcworkspace

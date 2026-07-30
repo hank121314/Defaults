@@ -323,16 +323,15 @@ extension Defaults {
 
 			if Bound.isNativelySupportedType {
 				return [value.lowerBound, value.upperBound]
-			} else {
-				guard
-					let lowerBound = Bound.bridge.serialize(value.lowerBound as? Bound.Value),
-					let upperBound = Bound.bridge.serialize(value.upperBound as? Bound.Value)
-				else {
-					return nil
-				}
-
-				return [lowerBound, upperBound]
 			}
+			guard
+				let lowerBound = Bound.bridge.serialize(value.lowerBound as? Bound.Value),
+				let upperBound = Bound.bridge.serialize(value.upperBound as? Bound.Value)
+			else {
+				return nil
+			}
+
+			return [lowerBound, upperBound]
 		}
 
 		public func deserialize(_ object: Serializable?) -> Value? {

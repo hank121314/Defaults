@@ -200,7 +200,7 @@ extension Defaults.Serializable {
 	return Value.toValue(anyObject)
 	```
 	*/
-	static func toValue<T: Defaults.Serializable>(_ anyObject: Any, type: T.Type = Self.self) -> T? {
+	public static func toValue<T: Defaults.Serializable>(_ anyObject: Any, type: T.Type = Self.self) -> T? {
 		if
 			T.isNativelySupportedType,
 			let anyObject = anyObject as? T
@@ -228,8 +228,7 @@ extension Defaults.Serializable {
 	set(Value.toSerialize(value), forKey: key)
 	```
 	*/
-	@usableFromInline
-	static func toSerializable<T: Defaults.Serializable>(_ value: T) -> Any? {
+	public static func toSerializable<T: Defaults.Serializable>(_ value: T) -> Any? {
 		guard !T.isNativelySupportedType else {
 			return value
 		}

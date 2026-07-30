@@ -33,7 +33,6 @@ public final class DefaultsUserBridge: Defaults.Bridge {
 		else {
 			return nil
 		}
-
 		return User(username: username, password: password)
 	}
 }
